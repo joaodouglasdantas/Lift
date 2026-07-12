@@ -4,3 +4,4 @@ dist/
 
 # Windows/OneDrive
 desktop.ini
+.env

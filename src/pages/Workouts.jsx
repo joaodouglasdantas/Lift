@@ -38,10 +38,10 @@ export default function Workouts() {
     for (const ex of day.exercises) {
       for (let n = 1; n <= ex.sets; n++) {
         const v = sets[setKey(ex.id, n)] || {};
-        payload.push({ exerciseId: ex.id, setNumber: n, weightKg: v.weightKg, reps: v.reps });
+        payload.push({ exerciseId: ex.id, exerciseName: ex.name, setNumber: n, weightKg: v.weightKg, reps: v.reps });
       }
     }
-    await api.addSession({ dayId: day.id, notes, sets: payload });
+    await api.addSession({ dayId: day.id, dayFocus: day.focus, dayWeekday: day.weekday, notes, sets: payload });
     setSaved(true);
     setLogging(false);
     setSets({});

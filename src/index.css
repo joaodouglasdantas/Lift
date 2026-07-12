@@ -58,21 +58,21 @@ a { color: inherit; }
 .card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 14px;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
 }
 .card h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
 
-.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 4px; }
+.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-bottom: 20px; }
 .stat {
-  background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 16px;
-  display: flex; flex-direction: column; gap: 4px;
+  background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px;
+  display: flex; flex-direction: column; gap: 6px; min-height: 108px;
 }
 .stat .stat-head { display: flex; align-items: center; gap: 8px; color: var(--muted); }
-.stat .val { font-size: 26px; font-weight: 800; }
+.stat .val { font-size: 30px; font-weight: 800; line-height: 1.1; }
 .stat .val.red { color: var(--red); }
-.stat .lbl { font-size: 12px; color: var(--muted); }
+.stat .lbl { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 
 .day-tab { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; }
 .day-tab button {
@@ -154,5 +154,6 @@ button.ghost {
   .topbar { display: none; }
   .content { max-width: 900px; padding: 28px 32px; padding-bottom: 40px; }
   .stats { grid-template-columns: repeat(4, 1fr); gap: 20px; }
-  .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+  .content-grid .card { min-height: 240px; }
 }
