@@ -1,5 +1,5 @@
 // Cliente da API do Lift. Em dev, o Vite faz proxy de /api -> localhost:3333.
-const BASE = "/api";
+const BASE = (import.meta.env.VITE_API_URL ?? "") + "/api";
 
 async function req(path, options) {
   const res = await fetch(BASE + path, {

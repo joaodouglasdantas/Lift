@@ -64,7 +64,7 @@ a { color: inherit; }
 }
 .card h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
 
-.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 4px; }
 .stat {
   background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 16px;
   display: flex; flex-direction: column; gap: 4px;
@@ -153,6 +153,6 @@ button.ghost {
 
   .topbar { display: none; }
   .content { max-width: 900px; padding: 28px 32px; padding-bottom: 40px; }
-  .stats { grid-template-columns: repeat(4, 1fr); }
-  .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .stats { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
 }
