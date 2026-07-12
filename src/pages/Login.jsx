@@ -26,14 +26,14 @@ export default function Login() {
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <h1 style={{ fontSize: 40, fontWeight: 800, letterSpacing: 6, color: "var(--red)", margin: "0 0 4px" }}>LIFT</h1>
       <p className="muted" style={{ marginTop: 0, marginBottom: 24 }}>Academia e dieta</p>
-      <form className="card" onSubmit={submit} style={{ width: "100%", maxWidth: 360 }}>
-        <h2>{mode === "login" ? "Entrar" : "Criar conta"}</h2>
+      <form className="card auth" onSubmit={submit} style={{ width: "100%", maxWidth: 380, padding: 28 }}>
+        <h2 style={{ marginBottom: 6 }}>{mode === "login" ? "Entrar" : "Criar conta"}</h2>
         <label>E-mail</label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" autoComplete="email" />
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" autoComplete="email" style={{ marginBottom: 14 }} />
         <label>Senha</label>
         <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="mínimo 6 caracteres" autoComplete="current-password" />
         {err && <p style={{ color: "var(--red)", fontSize: 13, marginTop: 10 }}>{err}</p>}
-        <br />
+        <div style={{ height: 20 }} />
         <button className="primary" type="submit" disabled={loading}>
           {loading ? "..." : mode === "login" ? "Entrar" : "Cadastrar"}
         </button>
