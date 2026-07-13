@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { api } from "../api.js";
 import { IconPlus, IconTrash, IconUpload } from "../components/Icons.jsx";
 
-const WD = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-
 export default function Cadastro() {
   const [tab, setTab] = useState("treinos");
   return (
@@ -56,15 +54,15 @@ function Treinos() {
 
 function PlanCard({ planId, onChange }) {
   const [plan, setPlan] = useState(null);
-  const [dayForm, setDayForm] = useState({ weekday: 1, focus: "" });
+  const [dayForm, setDayForm] = useState({ label: "" });
   const load = () => api.plan(planId).then(setPlan);
   useEffect(() => { load(); }, [planId]);
   if (!plan) return null;
 
   const addDay = async () => {
-    if (!dayForm.focus.trim()) return;
+    if (!dayForm.label.trim()) return;
     await api.addDay(planId, dayForm);
-    setDayForm({ weekday: 1, focus: "" });
+    setDayForm({ label: "" });
     load();
   };
   const removePlan = async () => { if (confirm("Excluir plano?")) { await api.deletePlan(planId); onChange(); } };
@@ -80,55 +78,57 @@ function PlanCard({ planId, onChange }) {
       {plan.days.map((d) => <DayBlock key={d.id} planId={planId} day={d} onChange={load} />)}
 
       <div className="row" style={{ marginTop: 10, alignItems: "flex-end" }}>
-        <div style={{ flex: "0 0 90px" }}>
-          <label>Dia</label>
-          <select value={dayForm.weekday} onChange={(e) => setDayForm({ ...dayForm, weekday: Number(e.target.value) })}>
-            {WD.map((w, i) => <option key={i} value={i}>{w}</option>)}
-          </select>
-        </div>
-        <div><label>Foco</label><input value={dayForm.focus} onChange={(e) => setDayForm({ ...dayForm, focus: e.target.value })} placeholder="Peito e Tríceps" /></div>
-        <button className="ghost" onClick={addDay}><IconPlus size={16} /> Dia</button>
+        <div><label>Novo treino</label><input value={dayForm.label} onChange={(e) => setDayForm({ label: e.target.value })} placeholder="Ex: A - Peito e Tríceps" /></div>
+        <button className="ghost" onClick={addDay}><IconPlus size={16} /> Treino</button>
       </div>
     </div>
   );
 }
 
 function DayBlock({ planId, day, onChange }) {
-  const [open, setOpen] = useState(false);
   const empty = { name: "", description: "", sets: 3, reps: "10", restSeconds: 60, imageUrl: "", videoUrl: "" };
+  const [editing, setEditing] = useState(null); // null | "new" | exId
   const [ex, setEx] = useState(empty);
   const [up, setUp] = useState("");
 
-  const addEx = async () => {
+  const openNew = () => { setEx(empty); setUp(""); setEditing("new"); };
+  const openEdit = (e) => {
+    setEx({ name: e.name, description: e.description || "", sets: e.sets, reps: e.reps, restSeconds: e.restSeconds, imageUrl: e.imageUrl || "", videoUrl: e.videoUrl || "" });
+    setUp(""); setEditing(e.id);
+  };
+  const close = () => { setEditing(null); setEx(empty); setUp(""); };
+
+  const saveEx = async () => {
     if (!ex.name.trim()) return;
-    await api.addExercise(planId, day.id, ex);
-    setEx(empty); setUp(""); setOpen(false); onChange();
+    if (editing === "new") await api.addExercise(planId, day.id, ex);
+    else await api.updateExercise(planId, day.id, editing, ex);
+    close(); onChange();
   };
   const upFile = async (file, field) => {
     if (!file) return;
     setUp("Enviando...");
     try { const r = await api.upload(file); setEx((s) => ({ ...s, [field]: r.url })); setUp("Enviado: " + r.name); }
-    catch (e) { setUp("Falha no upload (Storage exige plano Blaze)"); }
+    catch (err) { setUp("Falha no upload. Publique as regras do Storage: firebase deploy --only storage"); }
   };
-  const removeDay = async () => { await api.deleteDay(planId, day.id); onChange(); };
-  const removeEx = async (id) => { await api.deleteExercise(planId, day.id, id); onChange(); };
+  const removeDay = async () => { if (confirm("Excluir este treino?")) { await api.deleteDay(planId, day.id); onChange(); } };
+  const removeEx = async (id, ev) => { ev.stopPropagation(); await api.deleteExercise(planId, day.id, id); onChange(); };
 
   return (
     <div style={{ borderLeft: "3px solid var(--red)", padding: "6px 12px", margin: "10px 0" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <strong>{WD[day.weekday]} · {day.focus}</strong>
+        <strong>{day.label || day.focus}</strong>
         <button className="icon-btn" onClick={removeDay}><IconTrash size={15} /></button>
       </div>
       {(day.exercises || []).map((e) => (
-        <div className="food" key={e.id}>
-          <span>{e.name} — {e.sets}x{e.reps}</span>
-          <button className="icon-btn" onClick={() => removeEx(e.id)}><IconTrash size={14} /></button>
+        <div className="food" key={e.id} onClick={() => openEdit(e)} style={{ cursor: "pointer" }}>
+          <span>{e.name} — {e.sets}x{e.reps} <span className="muted" style={{ fontSize: 11 }}>· editar</span></span>
+          <button className="icon-btn" onClick={(ev) => removeEx(e.id, ev)}><IconTrash size={14} /></button>
         </div>
       ))}
 
-      {!open && <button className="ghost" style={{ marginTop: 8 }} onClick={() => setOpen(true)}><IconPlus size={15} /> Exercício</button>}
+      {editing === null && <button className="ghost" style={{ marginTop: 8 }} onClick={openNew}><IconPlus size={15} /> Exercício</button>}
 
-      {open && (
+      {editing !== null && (
         <div style={{ marginTop: 10 }}>
           <label>Nome</label>
           <input value={ex.name} onChange={(e) => setEx({ ...ex, name: e.target.value })} placeholder="Supino reto" />
@@ -140,14 +140,15 @@ function DayBlock({ planId, day, onChange }) {
           <label>Descrição</label>
           <input value={ex.description} onChange={(e) => setEx({ ...ex, description: e.target.value })} />
           <label><IconUpload size={13} /> Imagem</label>
+          {ex.imageUrl && <img src={ex.imageUrl} alt="" style={{ width: "100%", borderRadius: 8, margin: "6px 0" }} />}
           <input type="file" accept="image/*" onChange={(e) => upFile(e.target.files[0], "imageUrl")} />
           <label>Vídeo (arquivo ou link)</label>
           <input type="file" accept="video/*" onChange={(e) => upFile(e.target.files[0], "videoUrl")} />
           <input style={{ marginTop: 6 }} value={ex.videoUrl} onChange={(e) => setEx({ ...ex, videoUrl: e.target.value })} placeholder="ou cole URL (YouTube)" />
           {up && <p className="muted" style={{ fontSize: 12 }}>{up}</p>}
           <div className="row" style={{ marginTop: 10 }}>
-            <button className="primary" onClick={addEx}>Salvar</button>
-            <button className="ghost" onClick={() => { setOpen(false); setEx(empty); setUp(""); }}>Cancelar</button>
+            <button className="primary" onClick={saveEx}>{editing === "new" ? "Adicionar" : "Salvar alterações"}</button>
+            <button className="ghost" onClick={close}>Cancelar</button>
           </div>
         </div>
       )}

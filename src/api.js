@@ -34,7 +34,7 @@ async function plan(planId) {
   const s = await getDoc(doc(db, "plans", planId));
   if (!s.exists()) return null;
   const data = { id: s.id, ...s.data() };
-  data.days = (data.days || []).slice().sort((a, b) => a.weekday - b.weekday);
+  data.days = data.days || [];
   return data;
 }
 async function createPlan({ name, description, daysPerWeek }) {
@@ -50,9 +50,16 @@ async function updatePlan(planId, data) {
 async function deletePlan(planId) {
   await deleteDoc(doc(db, "plans", planId));
 }
-async function addDay(planId, { weekday, focus }) {
+async function addDay(planId, { label }) {
   const p = await plan(planId);
-  const days = [...(p.days || []), { id: id16(), weekday: Number(weekday), focus: focus || "Treino", exercises: [] }];
+  const name = (label || "Treino").trim();
+  const days = [...(p.days || []), { id: id16(), label: name, focus: name, exercises: [] }];
+  await updateDoc(doc(db, "plans", planId), { days });
+}
+async function updateDay(planId, dayId, { label }) {
+  const p = await plan(planId);
+  const name = (label || "Treino").trim();
+  const days = (p.days || []).map((d) => (d.id !== dayId ? d : { ...d, label: name, focus: name }));
   await updateDoc(doc(db, "plans", planId), { days });
 }
 async function deleteDay(planId, dayId) {
@@ -78,6 +85,21 @@ async function deleteExercise(planId, dayId, exId) {
   const p = await plan(planId);
   const days = (p.days || []).map((d) =>
     d.id !== dayId ? d : { ...d, exercises: (d.exercises || []).filter((e) => e.id !== exId) });
+  await updateDoc(doc(db, "plans", planId), { days });
+}
+async function updateExercise(planId, dayId, exId, ex) {
+  const p = await plan(planId);
+  const days = (p.days || []).map((d) => {
+    if (d.id !== dayId) return d;
+    const exercises = (d.exercises || []).map((e) => (e.id !== exId ? e : {
+      ...e,
+      name: ex.name, description: ex.description || "",
+      sets: Number(ex.sets) || 3, reps: String(ex.reps ?? "10"),
+      restSeconds: Number(ex.restSeconds) || 60,
+      imageUrl: ex.imageUrl || "", videoUrl: ex.videoUrl || "",
+    }));
+    return { ...d, exercises };
+  });
   await updateDoc(doc(db, "plans", planId), { days });
 }
 
@@ -204,7 +226,7 @@ async function upload(file) {
 
 export const api = {
   getProfile, saveProfile,
-  plans, plan, createPlan, updatePlan, deletePlan, addDay, deleteDay, addExercise, deleteExercise,
+  plans, plan, createPlan, updatePlan, deletePlan, addDay, updateDay, deleteDay, addExercise, updateExercise, deleteExercise,
   diet, addDiet, delDiet,
   weight, addWeight, delWeight,
   sessions, session, addSession, delSession,

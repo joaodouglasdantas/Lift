@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { api } from "../api.js";
 import { IconTrash, IconDumbbell } from "../components/Icons.jsx";
 
-const WD = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-
 function fmtDate(iso) {
   return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 }
@@ -56,7 +54,7 @@ export default function History() {
               <IconDumbbell size={18} />
               <div>
                 <div style={{ fontWeight: 700 }}>{s.day ? s.day.focus : "Treino"}</div>
-                <div className="date">{s.day ? WD[s.day.weekday] + " · " : ""}{fmtDate(s.date)}{s.durationMin ? ` · ${s.durationMin} min` : ""}</div>
+                <div className="date">{fmtDate(s.date)}{s.durationMin ? ` · ${s.durationMin} min` : ""}</div>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

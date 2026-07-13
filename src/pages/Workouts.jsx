@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api.js";
 import { IconCheck, IconPlay, IconDumbbell } from "../components/Icons.jsx";
 
-const WD = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+const dayName = (d) => d.label || d.focus || "Treino";
 
 export default function Workouts() {
   const [plan, setPlan] = useState(null);
@@ -41,7 +41,7 @@ export default function Workouts() {
         payload.push({ exerciseId: ex.id, exerciseName: ex.name, setNumber: n, weightKg: v.weightKg, reps: v.reps });
       }
     }
-    await api.addSession({ dayId: day.id, dayFocus: day.focus, dayWeekday: day.weekday, notes, sets: payload });
+    await api.addSession({ dayId: day.id, dayFocus: dayName(day), notes, sets: payload });
     setSaved(true);
     setLogging(false);
     setSets({});
@@ -59,7 +59,7 @@ export default function Workouts() {
       <div className="day-tab">
         {plan.days.map((dd, i) => (
           <button key={dd.id} className={i === activeDay ? "active" : ""} onClick={() => { setActiveDay(i); setLogging(false); }}>
-            {WD[dd.weekday].slice(0, 3)}
+            {dayName(dd)}
           </button>
         ))}
       </div>
@@ -67,7 +67,7 @@ export default function Workouts() {
       {day && (
         <>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <h3 style={{ margin: 0 }}>{WD[day.weekday]} · {day.focus}</h3>
+            <h3 style={{ margin: 0 }}>{dayName(day)}</h3>
             {!logging && day.exercises.length > 0 && (
               <button className="ghost" onClick={() => setLogging(true)}><IconDumbbell size={16} /> Registrar</button>
             )}
