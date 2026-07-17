@@ -27,6 +27,35 @@ function LineChart({ data, xKey, yKey, unit = "" }) {
   );
 }
 
+function LoadProgress() {
+  const [lib, setLib] = useState([]);
+  const [refId, setRefId] = useState("");
+  const [rows, setRows] = useState([]);
+
+  useEffect(() => { api.libList().then((l) => { setLib(l); if (l.length) setRefId(l[0].id); }); }, []);
+  useEffect(() => { if (refId) api.exerciseProgress(refId).then(setRows); }, [refId]);
+
+  const data = rows.map((r) => ({ label: new Date(r.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }), maxWeight: r.maxWeight }));
+
+  return (
+    <div className="card">
+      <h2>Evolução de carga</h2>
+      {lib.length === 0 ? (
+        <p className="muted">Cadastre exercícios na aba Cadastro pra acompanhar a carga.</p>
+      ) : (
+        <>
+          <select value={refId} onChange={(e) => setRefId(e.target.value)} style={{ marginBottom: 12 }}>
+            {lib.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+          </select>
+          {data.length === 0
+            ? <p className="muted">Sem registros de carga pra esse exercício ainda.</p>
+            : <LineChart data={data} xKey="label" yKey="maxWeight" unit="kg" />}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [d, setD] = useState(null);
   const [err, setErr] = useState(null);
@@ -35,7 +64,7 @@ export default function Dashboard() {
     api.dashboard().then(setD).catch((e) => setErr(e.message));
   }, []);
 
-  if (err) return <p className="muted">Não consegui conectar à API. Ela está rodando em :3333? ({err})</p>;
+  if (err) return <p className="muted">Não consegui carregar os dados. ({err})</p>;
   if (!d) return <p className="center muted">Carregando...</p>;
 
   const streak = d.streak ?? 0;
@@ -48,6 +77,7 @@ export default function Dashboard() {
           <div className="streak-num">{streak} <span>dia{streak === 1 ? "" : "s"}</span></div>
           <div className="streak-lbl">
             {streak > 0 ? "de treino em sequência — não quebre a corrente!" : "Conclua um treino hoje pra começar sua sequência."}
+            {d.caloriesBurnedToday > 0 ? ` · ${d.caloriesBurnedToday} kcal queimadas hoje` : ""}
           </div>
         </div>
       </div>
@@ -86,6 +116,8 @@ export default function Dashboard() {
           <LineChart data={d.caloriesByDay.map((c) => ({ ...c, label: c.date.slice(5) }))} xKey="label" yKey="calories" />
         </div>
       </div>
+
+      <LoadProgress />
 
       <div className="card">
         <h2>Perfil</h2>

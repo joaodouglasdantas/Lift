@@ -96,3 +96,18 @@ export const IconLogout = ({ size = 24 }) => (
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
   </svg>
 );
+
+export const IconEdit = ({ size = 24 }) => (
+  <svg {...base(size)}>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+  </svg>
+);
+
+export const IconGrip = ({ size = 24 }) => (
+  <svg {...base(size)}>
+    <circle cx="9" cy="6" r="1" /><circle cx="15" cy="6" r="1" />
+    <circle cx="9" cy="12" r="1" /><circle cx="15" cy="12" r="1" />
+    <circle cx="9" cy="18" r="1" /><circle cx="15" cy="18" r="1" />
+  </svg>
+);

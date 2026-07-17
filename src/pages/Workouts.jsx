@@ -24,6 +24,15 @@ export default function Workouts() {
       .catch((e) => setErr(e.message));
   }, []);
 
+  // Abre no treino que cobre o dia de hoje
+  useEffect(() => {
+    if (plan && plan.days && plan.days.length) {
+      const wd = new Date().getDay();
+      const idx = plan.days.findIndex((d) => (d.weekdays || []).includes(wd));
+      if (idx >= 0) setActiveDay(idx);
+    }
+  }, [plan]);
+
   if (err) return <p className="muted">Erro ao carregar treinos: {err}</p>;
   if (plan === null) return <p className="center muted">Carregando...</p>;
   if (plan === false) return <p className="center muted">Nenhum plano cadastrado ainda. Crie na aba Cadastro.</p>;
@@ -46,10 +55,11 @@ export default function Workouts() {
     for (const ex of completed) {
       for (let n = 1; n <= ex.sets; n++) {
         const v = sets[setKey(ex.id, n)] || {};
-        payload.push({ exerciseId: ex.id, exerciseName: ex.name, setNumber: n, weightKg: v.weightKg, reps: v.reps });
+        payload.push({ exerciseId: ex.refId || ex.id, exerciseName: ex.name, setNumber: n, weightKg: v.weightKg, reps: v.reps });
       }
     }
-    await api.addSession({ dayId: day.id, dayFocus: dayName(day), notes, sets: payload });
+    const caloriesBurned = completed.reduce((sum, ex) => sum + (ex.calories || 0), 0);
+    await api.addSession({ dayId: day.id, dayFocus: dayName(day), notes, caloriesBurned, sets: payload });
     setSaved(true);
     cancelLog();
     setTimeout(() => setSaved(false), 3000);
