@@ -1,13 +1,15 @@
 import { useState } from "react";
 
-// Mostra a logo em /logo.png (salve seu arquivo em Lift/public/logo.png).
+// Logos ficam em Lift/public/:
+//   /logo.png        -> versão branca (para fundos escuros/vermelhos: topo e sidebar)
+//   /logo-color.png  -> versão vermelha (para a tela de login)
 // Se o arquivo não existir, cai no texto "LIFT" como fallback.
-export default function Logo({ height = 34, color = "var(--red)" }) {
+export default function Logo({ height = 34, color = "var(--red)", src = "/logo.png" }) {
   const [ok, setOk] = useState(true);
   if (ok) {
     return (
       <img
-        src="/logo.png"
+        src={src}
         alt="Lift"
         style={{ height, width: "auto", display: "block", objectFit: "contain" }}
         onError={() => setOk(false)}

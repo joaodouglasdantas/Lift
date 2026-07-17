@@ -25,7 +25,7 @@ export default function Login() {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <div style={{ marginBottom: 4 }}><Logo height={64} /></div>
+      <div style={{ marginBottom: 4 }}><Logo height={64} src="/logo-color.png" /></div>
       <p className="muted" style={{ marginTop: 0, marginBottom: 24 }}>Academia e dieta</p>
       <form className="card auth" onSubmit={submit} style={{ width: "100%", maxWidth: 380, padding: 28 }}>
         <h2 style={{ marginBottom: 6 }}>{mode === "login" ? "Entrar" : "Criar conta"}</h2>
