@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { api } from "../api.js";
+import { api, localDay } from "../api.js";
 import { IconPlus, IconTrash, IconFlame } from "../components/Icons.jsx";
 
-const MEALS = ["café", "almoço", "lanche", "janta"];
+const MEALS = ["Café", "Almoço", "Lanche", "Janta"];
 
 export default function Diet() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDay();
   const [entries, setEntries] = useState([]);
-  const [form, setForm] = useState({ meal: "café", food: "", quantity: "", calories: "" });
+  const [form, setForm] = useState({ meal: "Café", food: "", quantity: "", calories: "", protein: "" });
   const [err, setErr] = useState(null);
 
   const load = () => api.diet(today).then(setEntries).catch((e) => setErr(e.message));
@@ -17,14 +17,14 @@ export default function Diet() {
     e.preventDefault();
     if (!form.food.trim()) return;
     await api.addDiet(form);
-    setForm({ ...form, food: "", quantity: "", calories: "" });
+    setForm({ ...form, food: "", quantity: "", calories: "", protein: "" });
     load();
   };
 
   const remove = async (id) => { await api.delDiet(id); load(); };
 
-  const totalKcal = entries.reduce((s, e) => s + e.calories, 0);
-  const totalProt = entries.reduce((s, e) => s + e.protein, 0);
+  const totalKcal = entries.reduce((s, e) => s + (e.calories || 0), 0);
+  const totalProt = entries.reduce((s, e) => s + (e.protein || 0), 0);
 
   if (err) return <p className="muted">Erro ao carregar dieta: {err}</p>;
 
@@ -59,6 +59,10 @@ export default function Diet() {
             <label>Calorias</label>
             <input type="number" value={form.calories} onChange={(e) => setForm({ ...form, calories: e.target.value })} placeholder="0" />
           </div>
+          <div>
+            <label>Proteína (g)</label>
+            <input type="number" value={form.protein} onChange={(e) => setForm({ ...form, protein: e.target.value })} placeholder="0" />
+          </div>
         </div>
         <br />
         <button className="primary" type="submit"><IconPlus size={18} /> Adicionar</button>
@@ -68,14 +72,17 @@ export default function Diet() {
         <h2>Hoje</h2>
         {entries.length === 0 && <p className="muted">Nada registrado ainda.</p>}
         {MEALS.map((meal) => {
-          const items = entries.filter((e) => e.meal === meal);
+          const items = entries.filter((e) => (e.meal || "").toLowerCase() === meal.toLowerCase());
           if (!items.length) return null;
           return (
             <div className="meal-group" key={meal}>
               <h3>{meal}</h3>
               {items.map((e) => (
                 <div className="food" key={e.id}>
-                  <span>{e.food} {e.quantity && <span className="muted">· {e.quantity}</span>}</span>
+                  <span>
+                    {e.food} {e.quantity && <span className="muted">· {e.quantity}</span>}
+                    {e.protein ? <span className="muted"> · {Math.round(e.protein)}g prot</span> : null}
+                  </span>
                   <span className="kcal">
                     {Math.round(e.calories)} kcal
                     <button className="icon-btn" onClick={() => remove(e.id)} aria-label="Remover"><IconTrash size={16} /></button>

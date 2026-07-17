@@ -10,6 +10,15 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 const uid = () => auth.currentUser?.uid;
 const id16 = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
+// Primeira letra de cada palavra em maiúscula (mantém o resto como digitado)
+const titleCase = (str) => String(str || "").replace(/\b\p{L}[\p{L}']*/gu, (w) => w.charAt(0).toUpperCase() + w.slice(1));
+// Data local no formato YYYY-MM-DD (evita o bug de virar o dia às 21h por causa do fuso UTC)
+const localDay = (d = new Date()) => {
+  const x = new Date(d);
+  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
+};
+export { localDay };
+
 // coleções filtradas pelo dono
 const mine = (name) => query(collection(db, name), where("ownerUid", "==", uid()));
 const snapList = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -39,7 +48,7 @@ async function plan(planId) {
 }
 async function createPlan({ name, description, daysPerWeek }) {
   const r = await addDoc(collection(db, "plans"), {
-    ownerUid: uid(), name, description: description || "",
+    ownerUid: uid(), name: titleCase(name), description: description || "",
     daysPerWeek: Number(daysPerWeek) || 3, days: [], createdAt: Date.now(),
   });
   return r.id;
@@ -52,13 +61,13 @@ async function deletePlan(planId) {
 }
 async function addDay(planId, { label }) {
   const p = await plan(planId);
-  const name = (label || "Treino").trim();
+  const name = titleCase((label || "Treino").trim());
   const days = [...(p.days || []), { id: id16(), label: name, focus: name, exercises: [] }];
   await updateDoc(doc(db, "plans", planId), { days });
 }
 async function updateDay(planId, dayId, { label }) {
   const p = await plan(planId);
-  const name = (label || "Treino").trim();
+  const name = titleCase((label || "Treino").trim());
   const days = (p.days || []).map((d) => (d.id !== dayId ? d : { ...d, label: name, focus: name }));
   await updateDoc(doc(db, "plans", planId), { days });
 }
@@ -71,7 +80,7 @@ async function addExercise(planId, dayId, ex) {
   const days = (p.days || []).map((d) => {
     if (d.id !== dayId) return d;
     const exercises = [...(d.exercises || []), {
-      id: id16(), name: ex.name, description: ex.description || "",
+      id: id16(), name: titleCase(ex.name), description: ex.description || "",
       sets: Number(ex.sets) || 3, reps: String(ex.reps ?? "10"),
       restSeconds: Number(ex.restSeconds) || 60,
       imageUrl: ex.imageUrl || "", videoUrl: ex.videoUrl || "",
@@ -93,7 +102,7 @@ async function updateExercise(planId, dayId, exId, ex) {
     if (d.id !== dayId) return d;
     const exercises = (d.exercises || []).map((e) => (e.id !== exId ? e : {
       ...e,
-      name: ex.name, description: ex.description || "",
+      name: titleCase(ex.name), description: ex.description || "",
       sets: Number(ex.sets) || 3, reps: String(ex.reps ?? "10"),
       restSeconds: Number(ex.restSeconds) || 60,
       imageUrl: ex.imageUrl || "", videoUrl: ex.videoUrl || "",
@@ -112,9 +121,9 @@ async function addDiet(body) {
   const now = new Date();
   await addDoc(collection(db, "diet"), {
     ownerUid: uid(),
-    day: body.date || now.toISOString().slice(0, 10),
+    day: body.date || localDay(now),
     createdAt: now.toISOString(),
-    meal: body.meal || "lanche", food: body.food, quantity: body.quantity || "",
+    meal: body.meal || "lanche", food: titleCase(body.food), quantity: body.quantity || "",
     calories: Number(body.calories) || 0, protein: Number(body.protein) || 0,
     carbs: Number(body.carbs) || 0, fat: Number(body.fat) || 0,
   });
@@ -206,8 +215,16 @@ async function dashboard() {
   const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
   const workoutsThisWeek = sessSnap.filter((s) => new Date(s.date) >= weekAgo).length;
 
+  // Streak: dias consecutivos (data local) com treino registrado, terminando hoje ou ontem
+  const dayset = new Set(sessSnap.map((s) => localDay(new Date(s.date))));
+  let streak = 0;
+  const cursor = new Date();
+  if (!dayset.has(localDay(cursor))) cursor.setDate(cursor.getDate() - 1);
+  while (dayset.has(localDay(cursor))) { streak++; cursor.setDate(cursor.getDate() - 1); }
+
   return {
-    workoutsTotal: sessSnap.length, workoutsThisWeek,
+    workoutsTotal: sessSnap.length, workoutsThisWeek, streak,
+    workoutDays: [...dayset],
     user: { name: profile.name, heightCm: profile.heightCm ?? null, goalWeightKg: profile.goalWeightKg ?? null },
     currentWeight, startWeight,
     weightChange: currentWeight && startWeight ? Math.round((currentWeight - startWeight) * 10) / 10 : 0,

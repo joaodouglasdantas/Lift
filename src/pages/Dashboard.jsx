@@ -38,8 +38,20 @@ export default function Dashboard() {
   if (err) return <p className="muted">Não consegui conectar à API. Ela está rodando em :3333? ({err})</p>;
   if (!d) return <p className="center muted">Carregando...</p>;
 
+  const streak = d.streak ?? 0;
+
   return (
     <>
+      <div className={"streak-banner" + (streak > 0 ? " on" : "")}>
+        <div className="streak-flame"><IconFlame size={34} /></div>
+        <div>
+          <div className="streak-num">{streak} <span>dia{streak === 1 ? "" : "s"}</span></div>
+          <div className="streak-lbl">
+            {streak > 0 ? "de treino em sequência — não quebre a corrente!" : "Conclua um treino hoje pra começar sua sequência."}
+          </div>
+        </div>
+      </div>
+
       <div className="stats">
         <div className="stat">
           <div className="stat-head"><IconTarget size={16} /></div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { auth } from "../firebase.js";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import Logo from "../components/Logo.jsx";
 
 export default function Login() {
   const [mode, setMode] = useState("login"); // login | signup
@@ -24,7 +25,7 @@ export default function Login() {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <h1 style={{ fontSize: 40, fontWeight: 800, letterSpacing: 6, color: "var(--red)", margin: "0 0 4px" }}>LIFT</h1>
+      <div style={{ marginBottom: 4 }}><Logo height={64} /></div>
       <p className="muted" style={{ marginTop: 0, marginBottom: 24 }}>Academia e dieta</p>
       <form className="card auth" onSubmit={submit} style={{ width: "100%", maxWidth: 380, padding: 28 }}>
         <h2 style={{ marginBottom: 6 }}>{mode === "login" ? "Entrar" : "Criar conta"}</h2>

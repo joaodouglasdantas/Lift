@@ -74,6 +74,19 @@ a { color: inherit; }
 .stat .val.red { color: var(--red); }
 .stat .lbl { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 
+/* ---------- STREAK ---------- */
+.streak-banner {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--card); border: 1px solid var(--card-border); border-radius: 16px;
+  padding: 18px 20px; margin-bottom: 20px;
+}
+.streak-banner.on { border-color: var(--red); background: linear-gradient(135deg, #2a0f0f, var(--card)); }
+.streak-flame { color: #4a4a4a; flex: 0 0 auto; }
+.streak-banner.on .streak-flame { color: var(--red); }
+.streak-num { font-size: 30px; font-weight: 800; line-height: 1; }
+.streak-num span { font-size: 15px; font-weight: 600; color: var(--muted); }
+.streak-lbl { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+
 .day-tab { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; }
 .day-tab button {
   flex: 0 0 auto; background: var(--card); color: var(--white); border: 1px solid var(--card-border);
@@ -156,4 +169,6 @@ button.ghost {
   .stats { grid-template-columns: repeat(4, 1fr); gap: 20px; }
   .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
   .content-grid .card { min-height: 240px; }
+  /* imagens/vídeos dos exercícios não ocupam a largura toda no PC */
+  .exercise .media { max-width: 360px; }
 }

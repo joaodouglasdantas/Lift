@@ -8,6 +8,7 @@ import Diet from "./pages/Diet.jsx";
 import History from "./pages/History.jsx";
 import Cadastro from "./pages/Cadastro.jsx";
 import Login from "./pages/Login.jsx";
+import Logo from "./components/Logo.jsx";
 import { IconDashboard, IconDumbbell, IconDiet, IconHistory, IconSettings, IconLogout } from "./components/Icons.jsx";
 
 const NAV = [
@@ -38,7 +39,7 @@ export default function App() {
   return (
     <div className="layout">
       <aside className="sidebar">
-        <div className="brand"><span className="brand-mark">LIFT</span></div>
+        <div className="brand"><Logo height={30} /></div>
         <nav className="side-nav"><NavItems /></nav>
         <button className="ghost" style={{ marginTop: "auto" }} onClick={() => signOut(auth)}>
           <IconLogout size={16} /> Sair
@@ -47,7 +48,7 @@ export default function App() {
 
       <div className="main">
         <header className="topbar">
-          <h1>LIFT</h1>
+          <Logo height={26} color="#fff" />
           <button className="icon-btn" onClick={() => signOut(auth)} aria-label="Sair" style={{ color: "#fff" }}>
             <IconLogout size={20} />
           </button>
